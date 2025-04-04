@@ -29,7 +29,7 @@ abstract class AppConstants {
   static const String merchantKey = String.fromEnvironment('PAYFAST_MERCHANT_KEY');
 
   /// auth phone fields
-  static const bool isNumberLengthAlwaysSame = true;
+  static const bool isNumberLengthAlwaysSame = false;
   static const String countryCodeISO = 'PHP';
   static const bool showFlag = true;
   static const bool showArrowIcon = true;

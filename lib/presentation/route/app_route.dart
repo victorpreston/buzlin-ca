@@ -1,6 +1,7 @@
 import 'package:demand/application/maksekeskus/maksekeskus_bloc.dart';
 import 'package:demand/domain/model/model/create_order_model.dart';
 import 'package:demand/presentation/pages/checkout/maksekeskus_screen.dart';
+import 'package:demand/presentation/pages/qr_scanner/qr_scanner_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -890,5 +891,20 @@ abstract class AppRoute {
         builder: (_) => ReviewImages(selectIndex: index, list: list),
       ),
     );
+  }
+
+  static void goQRScanner({required BuildContext context}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const QRScannerPage(),
+      ),
+    ).then((scannedData) {
+      if (scannedData != null) {
+        // Handle the scanned QR code data
+        debugPrint('Scanned QR Code: $scannedData');
+        // You can add additional logic here to handle the scanned data
+      }
+    });
   }
 }

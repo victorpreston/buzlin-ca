@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_remix/flutter_remix.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:demand/app_constants.dart';
 import 'package:demand/application/booking/booking_bloc.dart';
 import 'package:demand/application/main/main_bloc.dart';
@@ -62,12 +63,12 @@ class DrawerPage extends StatelessWidget {
                       AppRouteSetting.goMyAccount(context: context);
                     },
                   ),
-                  DrawerItem(
+                
+                DrawerItem(
                   colors: colors,
                   icon: FlutterRemix.video_line,
                   title: "BuzReels",
                   onTap: () {
-                    // TODO: Add navigation to BuzReels page
                     AppRoute.goBuzReels(context: context);
                   },
                 ),
@@ -231,6 +232,14 @@ class DrawerPage extends StatelessWidget {
                       AppRouteSetting.goGroupOrder(context, colors);
                     },
                   ),
+                DrawerItem(
+                  colors: colors,
+                  icon: FlutterRemix.car_line,
+                  title: "BuzRyde",
+                  onTap: () {
+                    launchUrl(Uri.parse('http://blog.buzlin.ca/buzapps'));
+                  },
+                ),
                 24.verticalSpace,
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.r),

@@ -39,7 +39,7 @@ class HomeTwoPage extends StatefulWidget {
   State<HomeTwoPage> createState() => _HomeTwoPageState();
 }
 
-class _HomeTwoPageState extends State<HomeTwoPage> {
+class _HomeTwoPageState extends State<HomeTwoPage> with SingleTickerProviderStateMixin {
   late RefreshController categoryRefresh;
   late RefreshController masterRefresh;
   late RefreshController productRefresh;
@@ -48,6 +48,8 @@ class _HomeTwoPageState extends State<HomeTwoPage> {
   late RefreshController bannerRefresh;
   late ScrollController scrollController;
   late PageController pageController;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
 
   void listen() {
     final direction = scrollController.position.userScrollDirection;
@@ -69,6 +71,19 @@ class _HomeTwoPageState extends State<HomeTwoPage> {
     pageController = PageController();
     scrollController = ScrollController();
     scrollController.addListener(listen);
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    
     super.initState();
   }
 
@@ -83,6 +98,7 @@ class _HomeTwoPageState extends State<HomeTwoPage> {
     bannerRefresh.dispose();
     scrollController.removeListener(listen);
     scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -213,56 +229,73 @@ class _HomeTwoPageState extends State<HomeTwoPage> {
       elevation: 0.0,
       centerTitle: false,
       actions: [
-        
-            IconButton(
-              onPressed: () {
-                if (LocalStorage.getToken().isEmpty) {
-                  AppRoute.goLogin(context);
-                  return;
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BuzReelsPage()),
-                );
-              },
-              icon: SvgPicture.string(
-                '''
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.7134 8.12811L20.4668 8.69379C20.2864 9.10792 19.7136 9.10792 19.5331 8.69379L19.2866 8.12811C18.8471 7.11947 18.0555 6.31641 17.0677 5.87708L16.308 5.53922C15.8973 5.35653 15.8973 4.75881 16.308 4.57612L17.0252 4.25714C18.0384 3.80651 18.8442 2.97373 19.2761 1.93083L19.5293 1.31953C19.7058 0.893489 20.2942 0.893489 20.4706 1.31953L20.7238 1.93083C21.1558 2.97373 21.9616 3.80651 22.9748 4.25714L23.6919 4.57612C24.1027 4.75881 24.1027 5.35653 23.6919 5.53922L22.9323 5.87708C21.9445 6.31641 21.1529 7.11947 20.7134 8.12811ZM2.9918 3H14V5H4V19H20V11H22V20.0066C22 20.5552 21.5447 21 21.0082 21H2.9918C2.44405 21 2 20.5551 2 20.0066V3.9934C2 3.44476 2.45531 3 2.9918 3ZM10.6219 8.41459L15.5008 11.6672C15.6846 11.7897 15.7343 12.0381 15.6117 12.2219C15.5824 12.2658 15.5447 12.3035 15.5008 12.3328L10.6219 15.5854C10.4381 15.708 10.1897 15.6583 10.0672 15.4745C10.0234 15.4088 10 15.3316 10 15.2526V8.74741C10 8.52649 10.1791 8.34741 10.4 8.34741C10.479 8.34741 10.5562 8.37078 10.6219 8.41459Z"></path>
-                </svg>
-                ''',
-                height: 24.r,
-                colorFilter: ColorFilter.mode(colors.textBlack, BlendMode.srcIn),
-              ),
-            ),
-            IconButton(
-            onPressed: () {
-              if (LocalStorage.getToken().isEmpty) {
-                AppRoute.goLogin(context);
-                return;
-              }
-              AppRouteSetting.goNotification(context: context);
+        IconButton(
+          onPressed: () {
+            _animationController.forward().then((_) {
+              _animationController.reverse();
+              AppRoute.goQRScanner(context: context);
+            });
+          },
+          icon: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: _animation.value * 2 * 3.14159,
+                child: Icon(
+                  Icons.qr_code_scanner,
+                  color: colors.textBlack,
+                ),
+              );
             },
-            icon: Badge(
-              label: (LocalStorage.getToken().isEmpty)
-                  ? const Text("0")
-                  : BlocBuilder<NotificationBloc, NotificationState>(
-                      builder: (context, state) {
-                        return Text(state.countOfNotifications?.notification
-                                .toString() ??
-                            "0");
-                      },
-                    ),
-              child: SvgPicture.asset(
-                "assets/svg/notification.svg",
-                height: 24.r,
-                colorFilter:
-                    ColorFilter.mode(colors.textBlack, BlendMode.srcIn),
-              ),
-            ))
-
-
-            
+          ),
+        ),
+        IconButton(
+          onPressed: () {
+            if (LocalStorage.getToken().isEmpty) {
+              AppRoute.goLogin(context);
+              return;
+            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const BuzReelsPage()),
+            );
+          },
+          icon: SvgPicture.string(
+            '''
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.7134 8.12811L20.4668 8.69379C20.2864 9.10792 19.7136 9.10792 19.5331 8.69379L19.2866 8.12811C18.8471 7.11947 18.0555 6.31641 17.0677 5.87708L16.308 5.53922C15.8973 5.35653 15.8973 4.75881 16.308 4.57612L17.0252 4.25714C18.0384 3.80651 18.8442 2.97373 19.2761 1.93083L19.5293 1.31953C19.7058 0.893489 20.2942 0.893489 20.4706 1.31953L20.7238 1.93083C21.1558 2.97373 21.9616 3.80651 22.9748 4.25714L23.6919 4.57612C24.1027 4.75881 24.1027 5.35653 23.6919 5.53922L22.9323 5.87708C21.9445 6.31641 21.1529 7.11947 20.7134 8.12811ZM2.9918 3H14V5H4V19H20V11H22V20.0066C22 20.5552 21.5447 21 21.0082 21H2.9918C2.44405 21 2 20.5551 2 20.0066V3.9934C2 3.44476 2.45531 3 2.9918 3ZM10.6219 8.41459L15.5008 11.6672C15.6846 11.7897 15.7343 12.0381 15.6117 12.2219C15.5824 12.2658 15.5447 12.3035 15.5008 12.3328L10.6219 15.5854C10.4381 15.708 10.1897 15.6583 10.0672 15.4745C10.0234 15.4088 10 15.3316 10 15.2526V8.74741C10 8.52649 10.1791 8.34741 10.4 8.34741C10.479 8.34741 10.5562 8.37078 10.6219 8.41459Z"></path>
+            </svg>
+            ''',
+            height: 24.r,
+            colorFilter: ColorFilter.mode(colors.textBlack, BlendMode.srcIn),
+          ),
+        ),
+        IconButton(
+          onPressed: () {
+            if (LocalStorage.getToken().isEmpty) {
+              AppRoute.goLogin(context);
+              return;
+            }
+            AppRouteSetting.goNotification(context: context);
+          },
+          icon: Badge(
+            label: (LocalStorage.getToken().isEmpty)
+                ? const Text("0")
+                : BlocBuilder<NotificationBloc, NotificationState>(
+                    builder: (context, state) {
+                      return Text(state.countOfNotifications?.notification
+                              .toString() ??
+                          "0");
+                    },
+                  ),
+            child: SvgPicture.asset(
+              "assets/svg/notification.svg",
+              height: 24.r,
+              colorFilter:
+                  ColorFilter.mode(colors.textBlack, BlendMode.srcIn),
+            ),
+          ),
+        ),
       ],
       title: Text(
         AppHelpers.getAppName(),

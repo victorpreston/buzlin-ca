@@ -9,14 +9,14 @@ abstract class ListConstants {
   /// social sign-in
   static const socialSignIn = [
     FlutterRemix.google_fill,
-    FlutterRemix.facebook_fill,
-    FlutterRemix.apple_fill,
+    // FlutterRemix.facebook_fill,
+    // FlutterRemix.apple_fill,
   ];
 
   static const socialSignInAndroid = [
     FlutterRemix.google_fill,
-    FlutterRemix.facebook_fill,
-    FlutterRemix.apple_fill,
+    // FlutterRemix.facebook_fill,
+    // FlutterRemix.apple_fill,
   ];
 
   static List<String> genderList = [
