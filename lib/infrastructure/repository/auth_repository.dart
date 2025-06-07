@@ -86,9 +86,8 @@ class AuthRepository implements AuthInterface {
         queryParameters: data,
       );
 
-      // Debug raw response structure
-      debugPrint('⚡ FULL RESPONSE: ${response.toString()}');
-      debugPrint('⚡ RESPONSE DATA TYPE: ${response.data.runtimeType}');
+      // debugPrint('FULL RESPONSE: ${response.toString()}');
+      // debugPrint('RESPONSE DATA TYPE: ${response.data.runtimeType}');
 
       if (response.data == null) {
         return right('Server returned empty response');
@@ -97,7 +96,7 @@ class AuthRepository implements AuthInterface {
       try {
         // First try parsing as your existing LoginResponse
         final loginResponse = LoginResponse.fromJson(response.data);
-        debugPrint('⚡ LOGIN RESPONSE: ${loginResponse}');
+        // debugPrint('LOGIN RESPONSE: ${loginResponse}');
         return left(loginResponse);
       } catch (parseError) {
         // If standard parsing fails, try to extract error message
@@ -120,10 +119,10 @@ class AuthRepository implements AuthInterface {
     } on DioException catch (e) {
       // Enhanced Dio error handling
       final errorMessage = _handleDioError(e);
-      debugPrint('🌐 NETWORK ERROR: $errorMessage');
+      // debugPrint('NETWORK ERROR: $errorMessage');
       return right(errorMessage);
     } catch (e) {
-      debugPrint('❌ UNEXPECTED ERROR: ${e.toString()}');
+      // debugPrint('UNEXPECTED ERROR: ${e.toString()}');
       return right('Unexpected error occurred');
     }
   }
