@@ -37,7 +37,7 @@ class BookedServiceItem extends StatelessWidget {
               ),
             ),
             Text(
-              AppHelpers.numberFormat(number: bookingModel.totalPrice),
+              AppHelpers.numberFormat(number: bookingModel.totalPrice, applyRate: true),
               style: CustomStyle.interNoSemi(color: colors.textBlack, size: 18),
             ),
           ],

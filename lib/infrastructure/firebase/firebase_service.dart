@@ -17,6 +17,7 @@ import 'package:demand/presentation/route/app_route_shop.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:dio/dio.dart';
 
 abstract class FirebaseService {
   FirebaseService._();
@@ -33,29 +34,113 @@ abstract class FirebaseService {
     return await firebaseM.getToken() ?? "";
   }
 
+
   static Future<Either<UserCredential, dynamic>> socialGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn();
 
-    googleSignIn.disconnect();
-
-    try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await googleSignIn.signIn();
-
-      final GoogleSignInAuthentication? googleSignInAuthentication =
-          await googleSignInAccount?.authentication;
+    // Step 1: Check if the user is already signed in
+    final GoogleSignInAccount? currentUser = googleSignIn.currentUser;
+    if (currentUser != null) {
+      print("[socialGoogle] User already signed in: ${currentUser.email}");
+      final GoogleSignInAuthentication googleAuth = await currentUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleSignInAuthentication?.accessToken,
-          idToken: googleSignInAuthentication?.idToken);
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
       return left(userCredential);
-    } catch (e) {
-      return right(e.toString());
+    }
+
+    print("[socialGoogle] Google Sign-In process started");
+
+    try {
+      // Step 2: Trigger Google Sign-In
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+      print("[socialGoogle] GoogleSignInAccount: ${googleSignInAccount?.email ?? 'null'}");
+
+      if (googleSignInAccount == null) {
+        print("[socialGoogle] Sign-in aborted by user or failed");
+        return right("Sign-in cancelled or failed.");
+      }
+
+      // Step 3: Get Google Auth tokens
+      final GoogleSignInAuthentication googleSignInAuthentication =
+      await googleSignInAccount.authentication;
+      print("[socialGoogle] Got accessToken: ${googleSignInAuthentication.accessToken != null}");
+
+      if (googleSignInAuthentication.accessToken == null ||
+          googleSignInAuthentication.idToken == null) {
+        print("[socialGoogle] Missing Google auth tokens");
+        return right("Google authentication tokens are missing.");
+      }
+
+      // Step 4: Create Firebase credential
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+      );
+      print("[socialGoogle] Firebase AuthCredential created");
+
+      // Step 5: Sign in to Firebase
+      final UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      print("[socialGoogle] Firebase sign-in success. UID: ${userCredential.user?.uid}");
+
+      return left(userCredential);
+    } catch (e, stack) {
+      print("[socialGoogle] Exception occurred: $e");
+      print("[socialGoogle] Stack trace:\n$stack");
+      return right("An error occurred: ${e.toString()}");
     }
   }
+
+  // static Future<void> _callGoogleCallback(
+  //     String email, String? idToken, String? displayName, String? avatarUrl, {String? referral}) async {
+  //   if (idToken == null) {
+  //     print("[callback] ID Token is null. Skipping callback.");
+  //     return;
+  //   }
+  //
+  //   try {
+  //     final dio = Dio();
+  //
+  //     final requestBody = {
+  //       'email': email,
+  //       'id': idToken,
+  //       'name': displayName ?? '',
+  //       'avatar': avatarUrl ?? '',
+  //     };
+  //
+  //     if (referral != null && referral.isNotEmpty) {
+  //       requestBody['referral'] = referral;
+  //     }
+  //
+  //     final response = await dio.post(
+  //       'https://api.buzlin.ca/api/v1/auth/google/callback',
+  //       data: requestBody,
+  //       options: Options(
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       ),
+  //     );
+  //
+  //     print("[callback] Backend callback success: ${response.data}");
+  //   } on DioException catch (e) {
+  //     print("[callback] DioException: ${e.message}");
+  //     if (e.response != null) {
+  //       print("[callback] Status code: ${e.response?.statusCode}");
+  //       print("[callback] Response: ${e.response?.data}");
+  //     }
+  //   } catch (e, stack) {
+  //     print("[callback] Unexpected error: $e");
+  //     print(stack);
+  //   }
+  // }
 
   static Future<Either<UserCredential, dynamic>> socialFacebook() async {
     final fb = FacebookAuth.instance;

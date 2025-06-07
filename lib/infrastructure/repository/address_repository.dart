@@ -36,6 +36,7 @@ class AddressRepository implements AddressInterface {
         '/api/v1/rest/countries',
         queryParameters: data,
       );
+      print('==> country paginate response: ${response.data}');
       return left(CountryPaginationResponse.fromJson(response.data));
     } catch (e) {
       debugPrint('==> get country paginate failure: $e');

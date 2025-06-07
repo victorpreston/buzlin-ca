@@ -30,22 +30,22 @@ abstract class AppHelpers {
     try {
       return (e.runtimeType == DioException)
           ? ((e as DioException).response?.data["message"] == "Bad request."
-              ? (e.response?.data["params"] as Map).values.first[0]
-              : e.response?.data["message"])
+          ? (e.response?.data["params"] as Map).values.first[0]
+          : e.response?.data["message"])
           : e.toString();
     } catch (s) {
       try {
         return (e.runtimeType == DioException)
             ? ((e as DioException).response?.data.toString().substring(
-                    (e.response?.data.toString().indexOf("<title>") ?? 0) + 7,
-                    e.response?.data.toString().indexOf("</title") ?? 0))
-                .toString()
+            (e.response?.data.toString().indexOf("<title>") ?? 0) + 7,
+            e.response?.data.toString().indexOf("</title") ?? 0))
+            .toString()
             : e.toString();
       } catch (r) {
         try {
           return (e.runtimeType == DioException)
               ? ((e as DioException).response?.data["error"]["message"])
-                  .toString()
+              .toString()
               : e.toString();
         } catch (f) {
           return e.toString();
@@ -74,8 +74,8 @@ abstract class AppHelpers {
 
   static errorSnackBar(
       {required BuildContext context,
-      required String message,
-      bool typeFixed = false}) {
+        required String message,
+        bool typeFixed = false}) {
     if (message.contains("DioException")) {
       return;
     }
@@ -121,24 +121,43 @@ abstract class AppHelpers {
     return -1;
   }
 
-  static String numberFormat(
-      {num? number, String? symbol, bool? isOrder, int? decimalDigits}) {
-    if (LocalStorage.getSelectedCurrency()?.position == "before") {
+  static String numberFormat({
+    num? number,
+    String? symbol,
+    bool? isOrder,
+    int? decimalDigits,
+    bool applyRate = false, // Added parameter to control rate application
+  }) {
+    // Get the selected currency
+    final currency = LocalStorage.getSelectedCurrency();
+
+    // Handle null number case
+    if (number == null) return "0";
+
+    // Only apply currency rate if explicitly requested via the applyRate parameter
+    // This fixes the double conversion issue
+    final valueToFormat = (applyRate && currency?.rate != null)
+        ? number * currency!.rate!
+        : number;
+
+    // Determine symbol to use
+    final displaySymbol = (isOrder ?? false)
+        ? symbol
+        : currency?.symbol;
+
+    // Format based on currency position
+    if (currency?.position == "before") {
       return NumberFormat.currency(
-        customPattern: '\u00a4#,###.#',
-        symbol: (isOrder ?? false)
-            ? symbol
-            : LocalStorage.getSelectedCurrency()?.symbol,
+        customPattern: '\u00a4#,###.${'#' * (decimalDigits ?? 2)}',
+        symbol: displaySymbol ?? '',
         decimalDigits: decimalDigits ?? 2,
-      ).format(number ?? 0);
+      ).format(valueToFormat);
     } else {
       return NumberFormat.currency(
-        customPattern: '#,###.#\u00a4',
-        symbol: (isOrder ?? false)
-            ? symbol
-            : LocalStorage.getSelectedCurrency()?.symbol,
+        customPattern: '#,###.${'#' * (decimalDigits ?? 2)}\u00a4',
+        symbol: displaySymbol ?? '',
         decimalDigits: decimalDigits ?? 2,
-      ).format(number ?? 0);
+      ).format(valueToFormat);
     }
   }
 
@@ -191,8 +210,8 @@ abstract class AppHelpers {
 
   static Future<DateTime?> showSelectDate(
       {required BuildContext context,
-      required CustomColorSet colors,
-      DateTime? dateTime}) async {
+        required CustomColorSet colors,
+        DateTime? dateTime}) async {
     return await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -305,8 +324,8 @@ abstract class AppHelpers {
 
   static addProduct(
       {required BuildContext context,
-      required ProductData? product,
-      required Stocks? stock}) {
+        required ProductData? product,
+        required Stocks? stock}) {
     if ((stock?.quantity ?? 0) <= 0) {
       Vibrate.feedback(FeedbackType.error);
       openDialog(
@@ -356,19 +375,19 @@ abstract class AppHelpers {
             (count != 0
                 ? 1
                 : (product?.minQty ?? 1) == 0
-                    ? 1
-                    : (product?.minQty ?? 1)));
+                ? 1
+                : (product?.minQty ?? 1)));
     context.read<ProductBloc>().add(const ProductEvent.updateState());
     context.read<CartBloc>().add(const CartEvent.updateState());
   }
 
   static removeProduct(
       {required BuildContext context,
-      required ProductData? product,
-      required Stocks? stock}) {
+        required ProductData? product,
+        required Stocks? stock}) {
     Vibrate.feedback(FeedbackType.selection);
     int count =
-        AppHelpers.getCountCart(productId: product?.id, stockId: stock?.id);
+    AppHelpers.getCountCart(productId: product?.id, stockId: stock?.id);
     if (count <= (product?.minQty ?? 1)) {
       LocalStorage.setCartList(
           productId: product?.id, stockId: stock?.id, count: 0);
@@ -384,8 +403,8 @@ abstract class AppHelpers {
 
   static deleteProduct(
       {required BuildContext context,
-      required ProductData? product,
-      required Stocks? stock}) {
+        required ProductData? product,
+        required Stocks? stock}) {
     Vibrate.feedback(FeedbackType.selection);
     LocalStorage.setCartList(
         productId: product?.id, stockId: stock?.id, count: 0);
@@ -524,7 +543,7 @@ abstract class AppHelpers {
       return (translations[trKey] ??
           (trKey.isNotEmpty
               ? trKey.replaceAll(".", " ").replaceAll("_", " ").replaceFirst(
-                  trKey.substring(0, 1), trKey.substring(0, 1).toUpperCase())
+              trKey.substring(0, 1), trKey.substring(0, 1).toUpperCase())
               : ''));
     } else {
       return translations[trKey] ?? trKey;
@@ -569,10 +588,10 @@ abstract class AppHelpers {
       );
     }
     final int startIndex =
-        mainText.toUpperCase().indexOf(subtext.toUpperCase());
+    mainText.toUpperCase().indexOf(subtext.toUpperCase());
     final String prefixText = mainText.substring(0, startIndex);
     final String centerText =
-        mainText.substring(startIndex, startIndex + subtext.length);
+    mainText.substring(startIndex, startIndex + subtext.length);
     final hasPostText = subtext.length + startIndex < mainText.length - 1;
     final String postText = hasPostText
         ? mainText.substring(subtext.length + startIndex, mainText.length - 1)
@@ -642,7 +661,7 @@ abstract class AppHelpers {
     for (final setting in settings) {
       if (setting.key == 'location') {
         final String? latString =
-            setting.value?.substring(0, setting.value?.indexOf(','));
+        setting.value?.substring(0, setting.value?.indexOf(','));
         if (latString == null) {
           return AppConstants.demoLatitude;
         }
@@ -658,7 +677,7 @@ abstract class AppHelpers {
     for (final setting in settings) {
       if (setting.key == 'location') {
         final String? latString =
-            setting.value?.substring(0, setting.value?.indexOf(','));
+        setting.value?.substring(0, setting.value?.indexOf(','));
         if (latString == null) {
           return AppConstants.demoLongitude;
         }

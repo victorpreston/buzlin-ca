@@ -39,7 +39,7 @@ Future<int> getOtherTranslation(int arg) async {
   res.fold((l) {
     l.data?.forEach((e) async {
       final translations =
-          await settingsRepository.getMobileTranslations(lang: e.locale);
+      await settingsRepository.getMobileTranslations(lang: e.locale);
       translations.fold((d) {
         LocalStorage.setOtherTranslations(
             translations: d.data, key: e.id.toString());
@@ -95,49 +95,70 @@ class _AppWidgetState extends State<AppWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: Future.wait({
-          AppTheme.create,
-          if (LocalStorage.getTranslations().isEmpty) fetchSetting()
-        }),
-        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.hasData) {
-            FlutterNativeSplash.remove();
-            final AppTheme theme = snapshot.data?[0];
-            return ScreenUtilInit(
-              useInheritedMediaQuery: true,
-              designSize: const Size(375, 812),
-              builder: (context, child) {
-                return RefreshConfiguration(
-                  footerBuilder: () => const ClassicFooter(
-                    idleIcon: SizedBox.shrink(),
-                    idleText: "",
-                    noDataText: "",
-                  ),
-                  headerBuilder: () => const WaterDropHeader(
-                    waterDropColor: CustomStyle.primary,
-                    idleIcon: Icon(FlutterRemix.plane_fill,
-                        size: 15, color: CustomStyle.white),
-                  ),
-                  child: ChangeNotifierProvider(
-                    create: (BuildContext context) => theme,
-                    child: MaterialApp(
-                      theme: ThemeData(useMaterial3: false),
-                      title: AppHelpers.getAppName(),
-                      builder: (context, child) => ScrollConfiguration(
-                        behavior: MyBehavior(),
-                        child: child!,
-                      ),
-                      debugShowCheckedModeBanner: false,
-                      home: LocalStorage.getToken().isEmpty ? _auth() : _main(),
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-          return const SizedBox.shrink();
-        });
+    return MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder(
+                  future: Future.wait({
+                    AppTheme.create,
+                    if (LocalStorage.getTranslations().isEmpty) fetchSetting()
+                  }),
+                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                    if (snapshot.hasData) {
+                      FlutterNativeSplash.remove();
+                      final AppTheme theme = snapshot.data?[0];
+                      return ScreenUtilInit(
+                        useInheritedMediaQuery: true,
+                        designSize: const Size(375, 812),
+                        minTextAdapt: true,
+                        splitScreenMode: true,
+                        builder: (context, child) {
+                          return RefreshConfiguration(
+                            footerBuilder: () => const ClassicFooter(
+                              idleIcon: SizedBox.shrink(),
+                              idleText: "",
+                              noDataText: "",
+                            ),
+                            headerBuilder: () => const WaterDropHeader(
+                              waterDropColor: CustomStyle.primary,
+                              idleIcon: Icon(FlutterRemix.plane_fill,
+                                  size: 15, color: CustomStyle.white),
+                            ),
+                            child: ChangeNotifierProvider(
+                              create: (BuildContext context) => theme,
+                              child: MaterialApp(
+                                theme: ThemeData(useMaterial3: false),
+                                title: AppHelpers.getAppName(),
+                                builder: (context, child) => ScrollConfiguration(
+                                  behavior: MyBehavior(),
+                                  child: MediaQuery(
+                                    data: MediaQuery.of(context).copyWith(
+                                      textScaler: TextScaler.linear(1.0),
+                                    ),
+                                    child: SafeArea(
+                                      child: child!,
+                                    ),
+                                  ),
+                                ),
+                                debugShowCheckedModeBanner: false,
+                                home: LocalStorage.getToken().isEmpty ? _auth() : _main(),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   BlocProvider<AuthBloc> _auth() {
@@ -186,9 +207,9 @@ class _AppWidgetState extends State<AppWidget> {
         ),
         LocalStorage.getToken().isNotEmpty
             ? BlocProvider<CartBloc>(
-                create: (context) =>
-                    CartBloc()..add(CartEvent.getCart(context: context)),
-              )
+          create: (context) =>
+          CartBloc()..add(CartEvent.getCart(context: context)),
+        )
             : BlocProvider<CartBloc>(create: (context) => CartBloc()),
         if (LocalStorage.getToken().isNotEmpty)
           BlocProvider<NotificationBloc>(
@@ -196,22 +217,22 @@ class _AppWidgetState extends State<AppWidget> {
                 ..add(NotificationEvent.fetchCount(context: context))),
         BlocProvider<BrandBloc>(
             create: (context) =>
-                BrandBloc()..add(BrandEvent.fetchBrands(context: context))),
+            BrandBloc()..add(BrandEvent.fetchBrands(context: context))),
         BlocProvider<MasterBloc>(
             create: (context) =>
-                MasterBloc()..add(MasterEvent.fetchMasters(context: context))),
+            MasterBloc()..add(MasterEvent.fetchMasters(context: context))),
         BlocProvider<CategoryBloc>(
             create: (context) => CategoryBloc()
               ..add(CategoryEvent.fetchCategoryOfService(
                   context: context, isRefresh: true))),
         LocalStorage.getToken().isNotEmpty
             ? BlocProvider<BookingBloc>(
-                create: (context) => BookingBloc()
-                  ..add(BookingEvent.fetchBookUpcoming(
-                      context: context, isRefresh: true))
-                  ..add(BookingEvent.fetchBookPast(
-                      context: context, isRefresh: true)),
-              )
+          create: (context) => BookingBloc()
+            ..add(BookingEvent.fetchBookUpcoming(
+                context: context, isRefresh: true))
+            ..add(BookingEvent.fetchBookPast(
+                context: context, isRefresh: true)),
+        )
             : BlocProvider<BookingBloc>(create: (context) => BookingBloc()),
       ],
       child: const MainPage(),
@@ -222,6 +243,6 @@ class _AppWidgetState extends State<AppWidget> {
 class MyBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(
-          BuildContext context, Widget child, ScrollableDetails details) =>
+      BuildContext context, Widget child, ScrollableDetails details) =>
       child;
 }

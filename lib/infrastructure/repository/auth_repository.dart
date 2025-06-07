@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:dartz/dartz.dart';
 import 'package:demand/domain/model/response/profile_response.dart';
 import 'package:demand/domain/model/response/register_response.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:demand/domain/di/dependency_manager.dart';
 import 'package:demand/domain/interface/auth.dart';
@@ -10,6 +13,17 @@ import 'package:demand/domain/model/response/verify_phone_response.dart';
 import 'package:demand/infrastructure/service/services.dart';
 import 'package:demand/infrastructure/firebase/firebase_service.dart';
 import 'package:demand/infrastructure/local_storage/local_storage.dart';
+
+
+class ReferralHelper {
+  static String generateReferralCode() {
+    final random = Random();
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return String.fromCharCodes(
+      List.generate(8, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+    );
+  }
+}
 
 class AuthRepository implements AuthInterface {
   @override
@@ -51,18 +65,110 @@ class AuthRepository implements AuthInterface {
       'email': email,
       'name': displayName,
       'id': id,
-      if (img != null) 'img': img,
+      if (img != null) 'avatar': img,
+      'referral': '8CNREM88',
     };
+
     try {
-      final client = dioHttp.client(requireAuth: false);
+      final client = dioHttp.client(requireAuth: false)
+        ..options.headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+        ..interceptors.add(LogInterceptor(
+          request: true,
+          responseBody: true,
+          error: true,
+        ));
+
       final response = await client.post(
         '/api/v1/auth/google/callback',
         queryParameters: data,
       );
-      return left(LoginResponse.fromJson(response.data));
+
+      // Debug raw response structure
+      debugPrint('⚡ FULL RESPONSE: ${response.toString()}');
+      debugPrint('⚡ RESPONSE DATA TYPE: ${response.data.runtimeType}');
+
+      if (response.data == null) {
+        return right('Server returned empty response');
+      }
+
+      try {
+        // First try parsing as your existing LoginResponse
+        final loginResponse = LoginResponse.fromJson(response.data);
+        debugPrint('⚡ LOGIN RESPONSE: ${loginResponse}');
+        return left(loginResponse);
+      } catch (parseError) {
+        // If standard parsing fails, try to extract error message
+        final dynamic responseData = response.data;
+
+        if (responseData is Map<String, dynamic>) {
+          // Check for common error formats
+          final errorMessage = responseData['message'] ??
+              responseData['error'] ??
+              'Unknown server error';
+          return right(errorMessage.toString());
+        } else if (responseData is String) {
+          // Handle plain text responses
+          return right(responseData);
+        }
+
+        return right('Failed to parse server response');
+      }
+
+    } on DioException catch (e) {
+      // Enhanced Dio error handling
+      final errorMessage = _handleDioError(e);
+      debugPrint('🌐 NETWORK ERROR: $errorMessage');
+      return right(errorMessage);
     } catch (e) {
-      debugPrint('==> login with google failure: $e');
-      return right(AppHelpers.errorHandler(e));
+      debugPrint('❌ UNEXPECTED ERROR: ${e.toString()}');
+      return right('Unexpected error occurred');
+    }
+  }
+
+  String _handleDioError(DioException e) {
+    // Handle different Dio error types
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection timeout';
+      case DioExceptionType.sendTimeout:
+        return 'Send timeout';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive timeout';
+      case DioExceptionType.badCertificate:
+        return 'Bad certificate';
+      case DioExceptionType.badResponse:
+        return _parseDioResponse(e.response);
+      case DioExceptionType.cancel:
+        return 'Request cancelled';
+      case DioExceptionType.connectionError:
+        return 'Connection error';
+      case DioExceptionType.unknown:
+        return 'Unknown network error';
+    }
+  }
+
+  String _parseDioResponse(Response? response) {
+    if (response == null) return 'No response from server';
+
+    try {
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        return data['message']?.toString() ??
+            data['error']?.toString() ??
+            'Server error: ${response.statusCode}';
+      }
+
+      if (data is String) {
+        return data.isNotEmpty ? data : 'Empty server response';
+      }
+
+      return 'Unexpected response format';
+    } catch (_) {
+      return 'Failed to parse error response';
     }
   }
 

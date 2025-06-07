@@ -1,8 +1,9 @@
+// lib/app_constants.dart
 import 'package:demand/infrastructure/service/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract class AppConstants {
   AppConstants._();
-
 
   static const bool isDemo = false;
   static const bool autoTrn = true;
@@ -11,22 +12,23 @@ abstract class AppConstants {
   static const SignUpType signUpType = SignUpType.email;
 
   /// api urls
-  static const String baseUrl = String.fromEnvironment('BASE_URL');
-  static const String webUrl = String.fromEnvironment('WEB_URL');
-  static const String adminPageUrl =  String.fromEnvironment('ADMIN_URL');
-  static const String googleApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
-  static const String firebaseWebKey = String.fromEnvironment('FIREBASE_API_KEY');
-  static const String urlPrefix = String.fromEnvironment('URL_PREFIX');
-  static const String routingBaseUrl = String.fromEnvironment('ROUTING_API');
-  static const String routingKey = String.fromEnvironment('ROUTING_KEY');
+  // Replace String.fromEnvironment with dotenv.env
+  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'https://api.buzlin.ca/';
+  static String get webUrl => dotenv.env['WEB_URL'] ?? 'https://buzlin.ca/';
+  static String get adminPageUrl => dotenv.env['ADMIN_URL'] ?? 'https://a.buzlin.ca/';
+  static String get googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'AIzaSyAPh6pqfLxj5rOL1IIY4yB2aayrL5UrRfg';
+  static String get firebaseWebKey => dotenv.env['FIREBASE_API_KEY'] ?? 'AIzaSyCHvjKHsqNTcSHQ6FYnuogFTFqvv21-1WY';
+  static String get urlPrefix => dotenv.env['URL_PREFIX'] ?? 'https://buzlin.page.link';
+  static String get routingBaseUrl => dotenv.env['ROUTING_API'] ?? 'https://api.openrouteservice.org/';
+  static String get routingKey => dotenv.env['ROUTING_KEY'] ?? '5b3ce3597851110001cf624892f508d1746742a28c72af74d4e60f2b';
 
   static const String androidPackageName = 'ca.buzlin.ca';
   static const String iosPackageName = 'ca.buzlin.ca';
 
   // PayFast
-  static const String passphrase = String.fromEnvironment('PAYFAST_PASSPHRASE');
-  static const String merchantId = String.fromEnvironment('PAYFAST_MERCHANT_ID');
-  static const String merchantKey = String.fromEnvironment('PAYFAST_MERCHANT_KEY');
+  static String get passphrase => dotenv.env['PAYFAST_PASSPHRASE'] ?? 'PASSPHRASE';
+  static String get merchantId => dotenv.env['PAYFAST_MERCHANT_ID'] ?? 'MERCHANT_ID';
+  static String get merchantKey => dotenv.env['PAYFAST_MERCHANT_KEY'] ?? '';
 
   /// auth phone fields
   static const bool isNumberLengthAlwaysSame = false;

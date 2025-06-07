@@ -105,7 +105,8 @@ class _ServiceBottomSheetState extends State<ServiceBottomSheet> {
                   padding:
                       EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
                   child: Text(
-                    "${AppHelpers.getTranslation(TrKeys.from)} ${AppHelpers.numberFormat(number: widget.service.totalPrice)}",
+                    "${AppHelpers.getTranslation(TrKeys.from)} ${AppHelpers.numberFormat(number: widget.service.totalPrice, applyRate: false
+                    )}",
                     style: CustomStyle.interNormal(
                         color: widget.colors.textHint, size: 12),
                   ),
@@ -198,7 +199,7 @@ class _ServiceBottomSheetState extends State<ServiceBottomSheet> {
                                       Text(
                                         AppHelpers.numberFormat(
                                             number: widget
-                                                .service.extras?[index].price),
+                                                .service.extras?[index].price, applyRate: true),
                                         style: CustomStyle.interRegular(
                                           color: widget.colors.textBlack,
                                           size: 16,

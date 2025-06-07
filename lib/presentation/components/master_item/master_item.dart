@@ -24,12 +24,12 @@ class MasterItem extends StatelessWidget {
 
   const MasterItem(
       {super.key,
-      required this.master,
-      required this.colors,
-      this.height = 198,
-      this.selectService = false,
-      this.like = false,
-      this.onTap});
+        required this.master,
+        required this.colors,
+        this.height = 198,
+        this.selectService = false,
+        this.like = false,
+        this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +64,7 @@ class MasterItem extends StatelessWidget {
                 ),
                 Padding(
                   padding:
-                      EdgeInsets.symmetric(horizontal: 12.r, vertical: 16.r),
+                  EdgeInsets.symmetric(horizontal: 12.r, vertical: 16.r),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -96,8 +96,8 @@ class MasterItem extends StatelessWidget {
                               width: like
                                   ? 110.r
                                   : selectService
-                                      ? 110.r
-                                      : 140.r,
+                                  ? 110.r
+                                  : 140.r,
                               child: Text(
                                 master.invite?.shop?.translation?.title ?? "",
                                 style: CustomStyle.interRegular(
@@ -125,7 +125,8 @@ class MasterItem extends StatelessWidget {
                               AppHelpers.numberFormat(
                                   number: selectService
                                       ? master.serviceMaster?.price
-                                      : master.serviceMinPrice),
+                                      : master.serviceMinPrice,
+                                  applyRate: true), // Added applyRate parameter
                               style: CustomStyle.interSemi(
                                   color: colors.textBlack, size: 16),
                               maxLines: 1,

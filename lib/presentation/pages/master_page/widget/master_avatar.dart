@@ -30,46 +30,54 @@ class MasterAvatar extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 20.r),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Align items to the top
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${state.master?.firstname ?? ""} ${state.master?.lastname ?? ""}",
-                        style: CustomStyle.interNoSemi(
-                            color: colors.textBlack, size: 20),
-                      ),
-                      6.verticalSpace,
-                      Row(
-                        children: [
-                          Icon(
-                            FlutterRemix.map_pin_2_fill,
-                            color: colors.textBlack,
-                            size: 18.r,
-                          ),
-                          7.horizontalSpace,
-                          ButtonEffectAnimation(
-                            onTap: () {
-                              AppRouteShop.goShopPage(
-                                  context: context,
-                                  shop: state.master?.invite?.shop);
-                            },
-                            child: SizedBox(
-                              width: MediaQuery.sizeOf(context).width - 170.r,
-                              child: Text(
-                                state.master?.invite?.shop?.translation
-                                        ?.title ??
-                                    "",
-                                style: CustomStyle.interNoSemi(
-                                    color: colors.textHint, size: 14),
-                              ),
+                  // Left column with name and shop
+                  Expanded( // Use Expanded instead of fixed width
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${state.master?.firstname ?? ""} ${state.master?.lastname ?? ""}",
+                          style: CustomStyle.interNoSemi(
+                              color: colors.textBlack, size: 20),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis, // Handle text overflow
+                        ),
+                        6.verticalSpace,
+                        Row(
+                          children: [
+                            Icon(
+                              FlutterRemix.map_pin_2_fill,
+                              color: colors.textBlack,
+                              size: 18.r,
                             ),
-                          )
-                        ],
-                      )
-                    ],
+                            7.horizontalSpace,
+                            Expanded( // Use Expanded for the shop name
+                              child: ButtonEffectAnimation(
+                                onTap: () {
+                                  AppRouteShop.goShopPage(
+                                      context: context,
+                                      shop: state.master?.invite?.shop);
+                                },
+                                child: Text(
+                                  state.master?.invite?.shop?.translation
+                                      ?.title ??
+                                      "",
+                                  style: CustomStyle.interNoSemi(
+                                      color: colors.textHint, size: 14),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis, // Handle text overflow
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                  const Spacer(),
+                  SizedBox(width: 16.r), // Add some spacing between columns
+                  // Right column with price
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -81,7 +89,8 @@ class MasterAvatar extends StatelessWidget {
                       6.verticalSpace,
                       Text(
                         AppHelpers.numberFormat(
-                            number: state.master?.serviceMinPrice),
+                            number: state.master?.serviceMinPrice,
+                            applyRate: true),
                         style: CustomStyle.interSemi(
                             color: colors.textBlack, size: 20),
                       ),

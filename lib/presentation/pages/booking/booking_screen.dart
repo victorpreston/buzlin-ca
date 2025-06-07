@@ -177,6 +177,7 @@ class BookingPage extends StatelessWidget {
                                                 ? state.upcoming.first
                                                     .totalPriceByParent
                                                 : 0),
+                                            applyRate: true,
                                           ),
                                           style: CustomStyle.interNoSemi(
                                               color: colors.textBlack,
