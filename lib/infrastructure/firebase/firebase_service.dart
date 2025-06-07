@@ -38,10 +38,8 @@ abstract class FirebaseService {
   static Future<Either<UserCredential, dynamic>> socialGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn();
 
-    // Step 1: Check if the user is already signed in
     final GoogleSignInAccount? currentUser = googleSignIn.currentUser;
     if (currentUser != null) {
-      // print("[socialGoogle] User already signed in: ${currentUser.email}");
       final GoogleSignInAuthentication googleAuth = await currentUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
@@ -55,22 +53,16 @@ abstract class FirebaseService {
       return left(userCredential);
     }
 
-    // print("[socialGoogle] Google Sign-In process started");
 
     try {
-      // Step 2: Trigger Google Sign-In
       final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
-      // print("[socialGoogle] GoogleSignInAccount: ${googleSignInAccount?.email ?? 'null'}");
 
       if (googleSignInAccount == null) {
-        // print("[socialGoogle] Sign-in aborted by user or failed");
         return right("Sign-in cancelled or failed.");
       }
 
-      // Step 3: Get Google Auth tokens
       final GoogleSignInAuthentication googleSignInAuthentication =
       await googleSignInAccount.authentication;
-      // print("[socialGoogle] Got accessToken: ${googleSignInAuthentication.accessToken != null}");
 
       if (googleSignInAuthentication.accessToken == null ||
           googleSignInAuthentication.idToken == null) {
@@ -78,22 +70,18 @@ abstract class FirebaseService {
         return right("Google authentication tokens are missing.");
       }
 
-      // Step 4: Create Firebase credential
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
-      // print("[socialGoogle] Firebase AuthCredential created");
 
-      // Step 5: Sign in to Firebase
       final UserCredential userCredential =
       await FirebaseAuth.instance.signInWithCredential(credential);
-      // print("[socialGoogle] Firebase sign-in success. UID: ${userCredential.user?.uid}");
+
 
       return left(userCredential);
     } catch (e, stack) {
-      // print("[socialGoogle] Exception occurred: $e");
-      // print("[socialGoogle] Stack trace:\n$stack");
+
       return right("An error occurred: ${e.toString()}");
     }
   }
